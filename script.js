@@ -36,6 +36,7 @@ function handleUser(e) {
 
     chat.user = userName.value;
     chat.color = color.value;
+    console.log(color);
     userModalObj.hide();
 }
 
@@ -45,7 +46,7 @@ function addToChatLog(user, color, message) {
 
     div.innerHTML = `<p>${user}: ${message}</p>`;
     div.style.backgroundColor = color;
-    chatDisplay.append(div);
+    chatDisplay.prepend(div);
     chatInput.reset();
 }
 
