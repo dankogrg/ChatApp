@@ -42,11 +42,12 @@ function handleUser(e) {
 
 function addToChatLog(user, color, message) {
     const div = document.createElement("div");
-    div.className = "divclass";
 
-    div.innerHTML = `<p>${user}: ${message}</p>`;
+    div.className = "divclass";
+    div.innerHTML = `<p style="text-align:right"><small>${chat.user}:</br></small>${message}</p>`;
     div.style.backgroundColor = color;
     chatDisplay.prepend(div);
+
     chatInput.reset();
 }
 
