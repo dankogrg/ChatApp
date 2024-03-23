@@ -56,6 +56,9 @@ function handleinput(e) {
     if (e.key != "Enter" && e.key != undefined) {
         return;
     }
+    if (!message.value.trim()) {
+        return;
+    }
 
     chat.chatLog.push(message.value);
     console.log(chat);
