@@ -27,12 +27,30 @@
                     </div>
                     <form method="post">
                         <div class="modal-body">
-                            <label for="username" class="form-label"></label>
+                            <label for="username" class="form-label"
+                                >Pick username:</label
+                            >
+                            <br />
                             <input
                                 type="text"
                                 name="username"
                                 id="username"
                                 placeholder="enter username"
+                                required
+                            />
+                            <br />
+                            <label for="color" class="form-label"
+                                >Choose background color:</label
+                            >
+                            <input
+                                style="
+                                    margin-left: 10px;
+                                    width: 25px;
+                                    height: 15px;
+                                "
+                                type="color"
+                                name="color"
+                                id="color"
                                 required
                             />
                         </div>

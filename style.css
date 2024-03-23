@@ -1,11 +1,14 @@
 .divclass {
     width: inherit;
+    background-color: rgb(210, 129, 129);
 
     display: block;
     padding-right: 20px;
+    margin: 10px 3% 0 40%;
     font-size: 20px;
-    bottom: 0px;
-    right: 0px;
+    border-bottom-left-radius: 25px;
+    border-top-right-radius: 25px;
+ 
 }
 body {
     box-sizing: border-box;
