@@ -8,6 +8,8 @@
     font-size: 20px;
     border-top-left-radius: 25px;
     border-bottom-right-radius: 25px;
+    margin-bottom: 10px;
+    
  
 }
 
@@ -20,7 +22,9 @@ body {
     height: 80vh;
     overflow-y: scroll;
     overflow-wrap: break-word;
-
+    display: flex;
+    flex-direction: column-reverse;
+    
     border: solid 3px;
     margin-bottom: 10px;
     vertical-align: bottom;
