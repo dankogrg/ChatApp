@@ -7,26 +7,36 @@ const userModal = document.querySelector("#usermodal");
 const userName = document.querySelector("#username");
 const userModalObj = new bootstrap.Modal(userModal, {});
 
+let y = 0;
 let user;
+let userColor;
 let chat = {
-    chatLog: [],
+    chatLines: [],
 };
 
 userModal.addEventListener("submit", handleUser);
 message.addEventListener("keyup", handleinput);
 button.addEventListener("click", handleinput);
 
-onCahtLoad();
-function onCahtLoad() {
+onChatLoad();
+function onChatLoad() {
     const records = localStorage.getItem("chat");
     if (records) {
         chat = JSON.parse(records);
-        chat.chatLog.forEach((chatMessage) => {
-            addToChatLog(chat.user, chat.color, chatMessage);
+        chat.chatLines.forEach((chatMessage) => {
+            addToChatLog(
+                chatMessage.user,
+                chatMessage.color,
+                chatMessage.message,
+                chatMessage.classNam
+            );
         });
     } else {
         window.addEventListener("load", () => {
             userModalObj.show();
+            userModal.addEventListener("shown.bs.modal", function () {
+                userName.focus();
+            });
         });
     }
 }
@@ -35,20 +45,46 @@ function handleUser(e) {
     e.preventDefault();
 
     chat.user = userName.value;
-    chat.color = color.value;
-    console.log(color);
+    chat.userColor = color.value;
+    chat.counter = 0;
+
     userModalObj.hide();
+    message.focus();
 }
 
-function addToChatLog(user, color, message) {
+function addToChatLog(user, color, message, classNam) {
     const div = document.createElement("div");
 
-    div.className = "divclass";
-    div.innerHTML = `<p style="text-align:right"><small>${chat.user}:</br></small>${message}</p>`;
-    div.style.backgroundColor = color;
+    div.className = classNam;
+    div.innerHTML = `<p style="text-align:right"><small><u>${user}:</u></small></br>${message}</p>`;
+    div.style.backgroundImage = `linear-gradient(#ffffff, ${color}) `;
     chatDisplay.prepend(div);
+}
 
-    chatInput.reset();
+function insertFakeUser() {
+    x = Math.random() >= 0.4;
+    console.log(x);
+
+    if (x) {
+        const fakeChatLine = {};
+        fakeChatLine.user = "John";
+        fakeChatLine.classNam = "fakedivclass";
+        fakeChatLine.color = "#ff0000";
+        fakeChatLine.message = `message ${chat.counter} `;
+        chat.counter++;
+
+        setTimeout(() => {
+            const fakeDiv = document.createElement("div");
+
+            fakeDiv.className = "fakedivclass";
+            fakeDiv.innerHTML = `<p style="text-align:right"><small><u>${fakeChatLine.user}</u></small></br>${fakeChatLine.message}</p>`;
+            fakeDiv.style.backgroundImage = `linear-gradient(#ffffff, ${fakeChatLine.color})`;
+
+            chatDisplay.prepend(fakeDiv);
+        }, Math.floor((Math.random() * 2 + 1) * 1000));
+        chat.chatLines.push(fakeChatLine);
+        return chat;
+    }
 }
 
 function handleinput(e) {
@@ -59,9 +95,19 @@ function handleinput(e) {
     if (!message.value.trim()) {
         return;
     }
-
-    chat.chatLog.push(message.value);
-    console.log(chat);
+    const chatLine = {};
+    chatLine.user = chat.user;
+    chatLine.classNam = "divclass";
+    chatLine.color = chat.userColor;
+    chatLine.message = message.value;
+    chat.chatLines.push(chatLine);
+    addToChatLog(
+        chatLine.user,
+        chatLine.color,
+        message.value,
+        chatLine.classNam
+    );
+    insertFakeUser();
     localStorage.setItem("chat", JSON.stringify(chat));
-    addToChatLog(chat.user, chat.color, message.value);
+    chatInput.reset();
 }
