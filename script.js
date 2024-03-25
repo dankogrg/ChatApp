@@ -62,7 +62,7 @@ function addToChatLog(user, color, message, classNam) {
 }
 
 function insertFakeUser() {
-    x = Math.random() >= 0.4;
+    x = Math.random() >= 0.3;
     console.log(x);
 
     if (x) {
@@ -72,16 +72,17 @@ function insertFakeUser() {
         fakeChatLine.color = "#ff0000";
         fakeChatLine.message = `message ${chat.counter} `;
         chat.counter++;
-
+        const fakeDiv = document.createElement("div");
+        fakeDiv.className = "spinnerclass spinner-border";
+        chatDisplay.prepend(fakeDiv);
         setTimeout(() => {
-            const fakeDiv = document.createElement("div");
-
-            fakeDiv.className = "fakedivclass";
+            fakeDiv.className = fakeChatLine.classNam;
             fakeDiv.innerHTML = `<p style="text-align:right"><small><u>${fakeChatLine.user}</u></small></br>${fakeChatLine.message}</p>`;
             fakeDiv.style.backgroundImage = `linear-gradient(#ffffff, ${fakeChatLine.color})`;
 
             chatDisplay.prepend(fakeDiv);
-        }, Math.floor((Math.random() * 2 + 1) * 1000));
+        }, Math.floor(Math.random() * 3 * 1000));
+
         chat.chatLines.push(fakeChatLine);
         return chat;
     }
