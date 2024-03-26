@@ -12,8 +12,8 @@ const membersList = document.querySelector(".members-list");
 let drone;
 let chat = {
     messages: [],
+    members: [],
 };
-let members = [];
 
 userModal.addEventListener("submit", handleUser);
 message.addEventListener("keyup", handleinput);
@@ -72,18 +72,18 @@ function openScalderone() {
 
         // List of currently online members, emitted once
         room.on("members", (m) => {
-            members = m;
+            chat.members = m;
             updateMembersDOM();
         });
 
         room.on("member_join", (member) => {
-            members.push(member);
+            chat.members.push(member);
             updateMembersDOM();
         });
 
         room.on("member_leave", ({ id }) => {
-            const index = members.findIndex((member) => member.id === id);
-            members.splice(index, 1);
+            const index = chat.members.findIndex((member) => member.id === id);
+            chat.members.splice(index, 1);
             updateMembersDOM();
         });
         room.on("data", (text, member) => {
@@ -94,10 +94,6 @@ function openScalderone() {
             } else {
                 console.log("error");
             }
-            room.on("message", (message) => {
-                const { data, id, timestamp, clientId, member } = message;
-                console.log(member);
-            });
         });
     });
 }
@@ -113,9 +109,9 @@ function createMemberElement(member) {
 }
 
 function updateMembersDOM() {
-    membersCount.innerText = `${members.length} users in room:`;
+    membersCount.innerText = `${chat.members.length} users in room:`;
     membersList.innerHTML = "";
-    members.forEach((member) =>
+    chat.members.forEach((member) =>
         membersList.appendChild(createMemberElement(member))
     );
 }
@@ -146,6 +142,6 @@ function handleinput(e) {
         message: message.value,
     });
 
-    localStorage.setItem("chat", JSON.stringify(chat));
+    // localStorage.setItem("chat", JSON.stringify(chat));
     chatInput.reset();
 }
