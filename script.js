@@ -30,7 +30,7 @@ function onChatLoad() {
     }
     window.addEventListener("load", () => {
         userModalObj.show();
-        userModal.addEventListener("shown.bs.modal", function () {
+        userModal.addEventListener("shown.bs.modal", () => {
             userName.focus();
         });
     });
@@ -41,71 +41,70 @@ function handleUser(e) {
 
     chat.user = userName.value;
     chat.userColor = color.value;
-    // chat.counter = 0;
 
+    openScalderone();
     userModalObj.hide();
     message.focus();
 }
 
-drone = new Scaledrone("7e11H1xcHoFAEHQc", {
-    data: {
-        // Will be sent out as clientData via events
-        name: getUser(),
-        color: getColor(),
-    },
-});
+function openScalderone() {
+    drone = new Scaledrone("7e11H1xcHoFAEHQc", {
+        data: {
+            // Will be sent out as clientData via events
+            name: userName.value,
+            color: color.value,
+        },
+    });
 
-function getUser() {
-    return userName.value;
-}
-function getColor() {
-    return color.value;
-}
-
-drone.on("open", (error) => {
-    if (error) {
-        return console.error(error);
-    }
-    console.log("Successfully connected to Scaledrone");
-
-    const room = drone.subscribe("observable-room");
-    room.on("open", (error) => {
+    drone.on("open", (error) => {
         if (error) {
             return console.error(error);
         }
-        console.log("Successfully joined room");
-    });
+        console.log("Successfully connected to Scaledrone");
 
-    // List of currently online members, emitted once
-    room.on("members", (m) => {
-        members = m;
-        updateMembersDOM();
-    });
+        const room = drone.subscribe("observable-room");
+        room.on("open", (error) => {
+            if (error) {
+                return console.error(error);
+            }
+            console.log("Successfully joined room");
+        });
 
-    // User joined the room
-    room.on("member_join", (member) => {
-        members.push(member);
-        updateMembersDOM();
-    });
+        // List of currently online members, emitted once
+        room.on("members", (m) => {
+            members = m;
+            updateMembersDOM();
+        });
 
-    // User left the room
-    room.on("member_leave", ({ id }) => {
-        const index = members.findIndex((member) => member.id === id);
-        members.splice(index, 1);
-        // updateMembersDOM(); uncomment later
+        room.on("member_join", (member) => {
+            members.push(member);
+            updateMembersDOM();
+        });
+
+        room.on("member_leave", ({ id }) => {
+            const index = members.findIndex((member) => member.id === id);
+            members.splice(index, 1);
+            updateMembersDOM();
+        });
+        room.on("data", (text, member) => {
+            if (member) {
+                const { name, color } = member.clientData;
+                console.log(member);
+                addToChatLog(name, color, text);
+            } else {
+                console.log("error");
+            }
+            room.on("message", (message) => {
+                const { data, id, timestamp, clientId, member } = message;
+                console.log(member);
+            });
+        });
     });
-    room.on("data", (text, member) => {
-        if (member) {
-            // addMessageToListDOM(text, member); uncomment later
-        } else {
-            // Message is from server
-        }
-    });
-});
+}
 
 function createMemberElement(member) {
     const { name, color } = member.clientData;
-    console.log(member.clientData);
+
     const el = document.createElement("div");
     el.appendChild(document.createTextNode(name));
     el.className = "divclass";
@@ -122,39 +121,16 @@ function updateMembersDOM() {
 }
 function addToChatLog(user, color, message) {
     const div = document.createElement("div");
+    if (user == userName.value) {
+        div.className = "divclass";
+    } else {
+        div.className = "reverseclass";
+    }
 
-    div.className = "divclass";
     div.innerHTML = `<p style="text-align:right"><small><u>${user}:</u></small></br>${message}</p>`;
     div.style.backgroundImage = `linear-gradient(#ffffff, ${color}) `;
     chatDisplay.prepend(div);
 }
-
-// function insertFakeUser() {
-//     x = Math.random() >= 0.3;
-//     console.log(x);
-
-//     if (x) {
-//         const fakeChatLine = {};
-//         fakeChatLine.user = "John";
-//         fakeChatLine.classNam = "fakedivclass";
-//         fakeChatLine.color = "#ff0000";
-//         fakeChatLine.message = `message ${chat.counter} `;
-//         chat.counter++;
-//         const fakeDiv = document.createElement("div");
-//         fakeDiv.className = "loader spinnerclass";
-//         chatDisplay.prepend(fakeDiv);
-//         setTimeout(() => {
-//             fakeDiv.className = fakeChatLine.classNam;
-//             fakeDiv.innerHTML = `<p style="text-align:right"><small><u>${fakeChatLine.user}</u></small></br>${fakeChatLine.message}</p>`;
-//             fakeDiv.style.backgroundImage = `linear-gradient(#ffffff, ${fakeChatLine.color})`;
-
-//             chatDisplay.prepend(fakeDiv);
-//         }, Math.floor(Math.random() * 3 * 1000));
-
-//         chat.chatLines.push(fakeChatLine);
-//         return chat;
-//     }
-// }
 
 function handleinput(e) {
     e.preventDefault();
@@ -169,8 +145,7 @@ function handleinput(e) {
         room: "observable-room",
         message: message.value,
     });
-    addToChatLog(chat.user, chat.userColor, message.value);
 
-    // localStorage.setItem("chat", JSON.stringify(chat));
+    localStorage.setItem("chat", JSON.stringify(chat));
     chatInput.reset();
 }
