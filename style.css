@@ -1,3 +1,42 @@
+body {
+    box-sizing: border-box;
+   
+}
+
+.chatdisplay{
+    width: inherit;
+    height: 80vh;
+    overflow-y: auto;
+    overflow-wrap: break-word;
+    display: flex;
+    flex-direction: column-reverse;
+    
+    border: solid 3px;
+    margin-bottom: 10px;
+    vertical-align: bottom;
+    position: relative;
+}
+p{
+    padding-left: 20px;
+}
+
+form{
+     margin-left: 30px
+}
+#color{
+    margin-left: 10px;
+    width: 25px;
+    height: 15px;
+}
+#button{
+    margin-left: 10px;
+    margin-bottom: 43px;
+    padding: 15px 25px;
+
+}
+textarea{
+    width: 80%; height: 55px
+}
 .divclass {
     width: inherit;
     display: block;
@@ -27,33 +66,31 @@
     margin-top: 10px;
  
 }
+
+.loader {
+    width: 60px;
+    aspect-ratio: 2;
+    --_g: no-repeat radial-gradient(circle closest-side,#22b41f 90%,#267f5300);
+    background: 
+      var(--_g) 0%   50%,
+      var(--_g) 50%  50%,
+      var(--_g) 100% 50%;
+    background-size: calc(100%/3) 50%;
+    animation: l3 1s infinite linear;
+  }
+  @keyframes l3 {
+      20%{background-position:0%   0%, 50%  50%,100%  50%}
+      40%{background-position:0% 100%, 50%   0%,100%  50%}
+      60%{background-position:0%  50%, 50% 100%,100%   0%}
+      80%{background-position:0%  50%, 50%  50%,100% 100%}
+  }
+
 .spinnerclass{
-  
-    display: block; 
-    
-    padding: 20px;
-    margin: 3% auto 3% 10%;
+    display: block;   
+    padding:  15px ;
+    margin: 3% auto 5% 8%;
 
 }
 
-body {
-    box-sizing: border-box;
-   
-}
-.chatdisplay{
-    width: inherit;
-    height: 80vh;
-    overflow-y: auto;
-    overflow-wrap: break-word;
-    display: flex;
-    flex-direction: column-reverse;
-    
-    border: solid 3px;
-    margin-bottom: 10px;
-    vertical-align: bottom;
-    position: relative;
-}
-p{
-    padding-left: 20px;
-}
+
 

@@ -6,13 +6,14 @@ const color = document.querySelector("#color");
 const userModal = document.querySelector("#usermodal");
 const userName = document.querySelector("#username");
 const userModalObj = new bootstrap.Modal(userModal, {});
+const membersCount = document.querySelector(".members-count");
+const membersList = document.querySelector(".members-list");
 
-let y = 0;
-let user;
-let userColor;
+let drone;
 let chat = {
-    chatLines: [],
+    messages: [],
 };
+let members = [];
 
 userModal.addEventListener("submit", handleUser);
 message.addEventListener("keyup", handleinput);
@@ -23,22 +24,16 @@ function onChatLoad() {
     const records = localStorage.getItem("chat");
     if (records) {
         chat = JSON.parse(records);
-        chat.chatLines.forEach((chatMessage) => {
-            addToChatLog(
-                chatMessage.user,
-                chatMessage.color,
-                chatMessage.message,
-                chatMessage.classNam
-            );
-        });
-    } else {
-        window.addEventListener("load", () => {
-            userModalObj.show();
-            userModal.addEventListener("shown.bs.modal", function () {
-                userName.focus();
-            });
+        chat.messages.forEach((chatMessage) => {
+            addToChatLog(chat.user, chat.userColor, chatMessage);
         });
     }
+    window.addEventListener("load", () => {
+        userModalObj.show();
+        userModal.addEventListener("shown.bs.modal", function () {
+            userName.focus();
+        });
+    });
 }
 
 function handleUser(e) {
@@ -46,47 +41,120 @@ function handleUser(e) {
 
     chat.user = userName.value;
     chat.userColor = color.value;
-    chat.counter = 0;
+    // chat.counter = 0;
 
     userModalObj.hide();
     message.focus();
 }
 
-function addToChatLog(user, color, message, classNam) {
+drone = new Scaledrone("7e11H1xcHoFAEHQc", {
+    data: {
+        // Will be sent out as clientData via events
+        name: getUser(),
+        color: getColor(),
+    },
+});
+
+function getUser() {
+    return userName.value;
+}
+function getColor() {
+    return color.value;
+}
+
+drone.on("open", (error) => {
+    if (error) {
+        return console.error(error);
+    }
+    console.log("Successfully connected to Scaledrone");
+
+    const room = drone.subscribe("observable-room");
+    room.on("open", (error) => {
+        if (error) {
+            return console.error(error);
+        }
+        console.log("Successfully joined room");
+    });
+
+    // List of currently online members, emitted once
+    room.on("members", (m) => {
+        members = m;
+        updateMembersDOM();
+    });
+
+    // User joined the room
+    room.on("member_join", (member) => {
+        members.push(member);
+        updateMembersDOM();
+    });
+
+    // User left the room
+    room.on("member_leave", ({ id }) => {
+        const index = members.findIndex((member) => member.id === id);
+        members.splice(index, 1);
+        // updateMembersDOM(); uncomment later
+    });
+    room.on("data", (text, member) => {
+        if (member) {
+            // addMessageToListDOM(text, member); uncomment later
+        } else {
+            // Message is from server
+        }
+    });
+});
+
+function createMemberElement(member) {
+    const { name, color } = member.clientData;
+    console.log(member.clientData);
+    const el = document.createElement("div");
+    el.appendChild(document.createTextNode(name));
+    el.className = "divclass";
+    el.style.backgroundImage = `linear-gradient(#ffffff, ${color}) `;
+    return el;
+}
+
+function updateMembersDOM() {
+    membersCount.innerText = `${members.length} users in room:`;
+    membersList.innerHTML = "";
+    members.forEach((member) =>
+        membersList.appendChild(createMemberElement(member))
+    );
+}
+function addToChatLog(user, color, message) {
     const div = document.createElement("div");
 
-    div.className = classNam;
+    div.className = "divclass";
     div.innerHTML = `<p style="text-align:right"><small><u>${user}:</u></small></br>${message}</p>`;
     div.style.backgroundImage = `linear-gradient(#ffffff, ${color}) `;
     chatDisplay.prepend(div);
 }
 
-function insertFakeUser() {
-    x = Math.random() >= 0.3;
-    console.log(x);
+// function insertFakeUser() {
+//     x = Math.random() >= 0.3;
+//     console.log(x);
 
-    if (x) {
-        const fakeChatLine = {};
-        fakeChatLine.user = "John";
-        fakeChatLine.classNam = "fakedivclass";
-        fakeChatLine.color = "#ff0000";
-        fakeChatLine.message = `message ${chat.counter} `;
-        chat.counter++;
-        const fakeDiv = document.createElement("div");
-        fakeDiv.className = "spinnerclass spinner-border";
-        chatDisplay.prepend(fakeDiv);
-        setTimeout(() => {
-            fakeDiv.className = fakeChatLine.classNam;
-            fakeDiv.innerHTML = `<p style="text-align:right"><small><u>${fakeChatLine.user}</u></small></br>${fakeChatLine.message}</p>`;
-            fakeDiv.style.backgroundImage = `linear-gradient(#ffffff, ${fakeChatLine.color})`;
+//     if (x) {
+//         const fakeChatLine = {};
+//         fakeChatLine.user = "John";
+//         fakeChatLine.classNam = "fakedivclass";
+//         fakeChatLine.color = "#ff0000";
+//         fakeChatLine.message = `message ${chat.counter} `;
+//         chat.counter++;
+//         const fakeDiv = document.createElement("div");
+//         fakeDiv.className = "loader spinnerclass";
+//         chatDisplay.prepend(fakeDiv);
+//         setTimeout(() => {
+//             fakeDiv.className = fakeChatLine.classNam;
+//             fakeDiv.innerHTML = `<p style="text-align:right"><small><u>${fakeChatLine.user}</u></small></br>${fakeChatLine.message}</p>`;
+//             fakeDiv.style.backgroundImage = `linear-gradient(#ffffff, ${fakeChatLine.color})`;
 
-            chatDisplay.prepend(fakeDiv);
-        }, Math.floor(Math.random() * 3 * 1000));
+//             chatDisplay.prepend(fakeDiv);
+//         }, Math.floor(Math.random() * 3 * 1000));
 
-        chat.chatLines.push(fakeChatLine);
-        return chat;
-    }
-}
+//         chat.chatLines.push(fakeChatLine);
+//         return chat;
+//     }
+// }
 
 function handleinput(e) {
     e.preventDefault();
@@ -96,19 +164,13 @@ function handleinput(e) {
     if (!message.value.trim()) {
         return;
     }
-    const chatLine = {};
-    chatLine.user = chat.user;
-    chatLine.classNam = "divclass";
-    chatLine.color = chat.userColor;
-    chatLine.message = message.value;
-    chat.chatLines.push(chatLine);
-    addToChatLog(
-        chatLine.user,
-        chatLine.color,
-        message.value,
-        chatLine.classNam
-    );
-    insertFakeUser();
-    localStorage.setItem("chat", JSON.stringify(chat));
+    chat.messages.push(message.value);
+    drone.publish({
+        room: "observable-room",
+        message: message.value,
+    });
+    addToChatLog(chat.user, chat.userColor, message.value);
+
+    // localStorage.setItem("chat", JSON.stringify(chat));
     chatInput.reset();
 }
