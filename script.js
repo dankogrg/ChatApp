@@ -11,9 +11,10 @@ const membersList = document.querySelector(".members-list");
 
 let drone;
 let chat = {
-    messages: [],
+    chatLines: [],
     members: [],
 };
+let localStorageSave = false;
 
 userModal.addEventListener("submit", handleUser);
 message.addEventListener("keyup", handleinput);
@@ -23,17 +24,30 @@ onChatLoad();
 function onChatLoad() {
     const records = localStorage.getItem("chat");
     if (records) {
+        localStorageSave = true;
         chat = JSON.parse(records);
-        chat.messages.forEach((chatMessage) => {
-            addToChatLog(chat.user, chat.userColor, chatMessage);
+        chat.chatLines.forEach((chatLine) => {
+            addToChatLog(chatLine.user, chatLine.color, chatLine.message);
+        });
+
+        chat.members.forEach((member) => console.log(member.clientData.name));
+        drone = new Scaledrone("7e11H1xcHoFAEHQc", {
+            data: {
+                // Will be sent out as clientData via events
+                name: chat.user,
+                color: chat.userColor,
+            },
+        });
+
+        openScalderone();
+    } else {
+        window.addEventListener("load", () => {
+            userModalObj.show();
+            userModal.addEventListener("shown.bs.modal", () => {
+                userName.focus();
+            });
         });
     }
-    window.addEventListener("load", () => {
-        userModalObj.show();
-        userModal.addEventListener("shown.bs.modal", () => {
-            userName.focus();
-        });
-    });
 }
 
 function handleUser(e) {
@@ -41,6 +55,13 @@ function handleUser(e) {
 
     chat.user = userName.value;
     chat.userColor = color.value;
+    drone = new Scaledrone("7e11H1xcHoFAEHQc", {
+        data: {
+            // Will be sent out as clientData via events
+            name: chat.user,
+            color: chat.userColor,
+        },
+    });
 
     openScalderone();
     userModalObj.hide();
@@ -48,14 +69,6 @@ function handleUser(e) {
 }
 
 function openScalderone() {
-    drone = new Scaledrone("7e11H1xcHoFAEHQc", {
-        data: {
-            // Will be sent out as clientData via events
-            name: userName.value,
-            color: color.value,
-        },
-    });
-
     drone.on("open", (error) => {
         if (error) {
             return console.error(error);
@@ -78,6 +91,7 @@ function openScalderone() {
 
         room.on("member_join", (member) => {
             chat.members.push(member);
+
             updateMembersDOM();
         });
 
@@ -89,8 +103,13 @@ function openScalderone() {
         room.on("data", (text, member) => {
             if (member) {
                 const { name, color } = member.clientData;
-                console.log(member);
                 addToChatLog(name, color, text);
+                let chatLine = {};
+                chatLine.user = name;
+                chatLine.color = color;
+                chatLine.message = text;
+                chat.chatLines.push(chatLine);
+                localStorage.setItem("chat", JSON.stringify(chat));
             } else {
                 console.log("error");
             }
@@ -117,7 +136,7 @@ function updateMembersDOM() {
 }
 function addToChatLog(user, color, message) {
     const div = document.createElement("div");
-    if (user == userName.value) {
+    if (user == chat.user) {
         div.className = "divclass";
     } else {
         div.className = "reverseclass";
@@ -136,12 +155,11 @@ function handleinput(e) {
     if (!message.value.trim()) {
         return;
     }
-    chat.messages.push(message.value);
+
     drone.publish({
         room: "observable-room",
         message: message.value,
     });
 
-    // localStorage.setItem("chat", JSON.stringify(chat));
     chatInput.reset();
 }
